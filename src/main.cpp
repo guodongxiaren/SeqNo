@@ -37,9 +37,20 @@ int get_seq_no(Connection *con, int appid)
     int value;
     while (res->next())
     {
-        cout<<"xxx"<<res->getInt("no")<<endl;
+        //cout<<"xxx"<<res->getInt("no")<<endl;
         value = res->getInt("no");
     }
+    value = value+1;
+    stmt = con->prepareStatement("update test.seq set no = ? where appid = ?");
+    if (!stmt)
+    {
+         cout<<"stmt error"<<endl;
+         return -1;
+            
+    }
+    stmt->setInt(1, value);
+    stmt->setInt(2, appid);
+    stmt->execute();
 
     con->commit();
     return value;
@@ -61,14 +72,14 @@ int main()
     driver = mysql::get_mysql_driver_instance();
     if (driver)
     {
-        cout<<"dirver ok"<<endl;
+        //cout<<"dirver ok"<<endl;
     }
     string schema = "tcp://" + dbHost + ":" + dbPort;
-    cout<<schema<<endl;
+    //cout<<schema<<endl;
     con = driver->connect(schema, dbUser, dbPswd);
     if (con)
     {
-        cout<<"conn ok"<<endl;
+        //cout<<"conn ok"<<endl;
     }
     int no;
     no = get_seq_no(con, 123);
