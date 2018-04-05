@@ -10,27 +10,39 @@
 #include <mysql_driver.h>
 #include <mysql_connection.h>
 #include <cppconn/statement.h>
+#include <cppconn/prepared_statement.h>
+#include <cppconn/resultset.h>
+
 
 #include <properties.hpp>
 
 using namespace std;
 using namespace sql;
 
-int get_seq_no(Connection *con, long& value)
+int get_seq_no(Connection *con, int appid)
 {
     con->setAutoCommit(false);
-    Statement *stmt = con->createStatement();
+    PreparedStatement *stmt = con->prepareStatement("select no from test.seq where appid = ? for update");
     if (!stmt)
     {
          cout<<"stmt error"<<endl;
          return -1;
             
     }
+    stmt->setInt(1, appid);
      // 执行各种SQL语句
-    stmt->execute("USE test");   
+    con->setSchema("test");
+    ResultSet* res = stmt->executeQuery();   
 
-    //con->commit();
-    con->rollback();
+    int value;
+    while (res->next())
+    {
+        cout<<"xxx"<<res->getInt("no")<<endl;
+        value = res->getInt("no");
+    }
+
+    con->commit();
+    return value;
 
 }
 int main()
@@ -58,6 +70,9 @@ int main()
     {
         cout<<"conn ok"<<endl;
     }
+    int no;
+    no = get_seq_no(con, 123);
+    cout<<"seq no:"<<no<<endl;
 
     delete con;
 	// driver不需要显式delete，Connection对象会小心释放它
