@@ -9,10 +9,40 @@
 
 #include <mysql_driver.h>
 #include <mysql_connection.h>
+#include <cppconn/statement.h>
+
+#include <properties.hpp>
+
 using namespace std;
 using namespace sql;
+
+int get_seq_no(Connection *con, long& value)
+{
+    con->setAutoCommit(false);
+    Statement *stmt = con->createStatement();
+    if (!stmt)
+    {
+         cout<<"stmt error"<<endl;
+         return -1;
+            
+    }
+     // 执行各种SQL语句
+    stmt->execute("USE test");   
+
+    //con->commit();
+    con->rollback();
+
+}
 int main()
 {
+    Properties prop;
+    ifstream in("../conf/seqno.ini");
+    prop.load(in);
+    string dbHost = prop.getProperty("DBHost");
+    string dbPort = prop.getProperty("DBPort");
+    string dbUser = prop.getProperty("DBUser");
+    string dbPswd = prop.getProperty("DBPswd");
+
     mysql::MySQL_Driver *driver;
     Connection *con;
 
@@ -21,8 +51,9 @@ int main()
     {
         cout<<"dirver ok"<<endl;
     }
-
-    con = driver->connect("tcp://127.0.0.1:3306", "root", "root1234");
+    string schema = "tcp://" + dbHost + ":" + dbPort;
+    cout<<schema<<endl;
+    con = driver->connect(schema, dbUser, dbPswd);
     if (con)
     {
         cout<<"conn ok"<<endl;

@@ -1,2 +1,3 @@
 all = SeqNo
-SeqNo: g++ main.cpp -std=c++11 -lmysqlcppconn 
+SeqNo: 
+	g++ main.cpp -std=c++11 -lmysqlcppconn -I ../vendor/include/ 

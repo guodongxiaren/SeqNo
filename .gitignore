@@ -1,3 +1,5 @@
 *.out
 *.a
 *.so
+properties.hpp
+seqno.ini
