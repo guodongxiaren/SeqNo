@@ -14,29 +14,27 @@ public class SeqNo {
 	private static ZooKeeper zk;
 	private static final Object lock = new Object();
 
-	
 	private static ZooKeeper getZooKeeper() throws Exception {
-		
+
 		if (zk == null) {
-			synchronized(lock) {
-				zk = (zk == null)?new ZooKeeper("127.0.0.1:2181", 500000, null):zk;
+			synchronized (lock) {
+				zk = (zk == null) ? new ZooKeeper("127.0.0.1:2181", 500000, null) : zk;
 			}
-			
-			//connectedSemaphore.await();
+
+			// connectedSemaphore.await();
 		}
 		return zk;
 	}
-	
 
 	/**
-	 * 注册新的APPID对应的Znode
-	 * 业务方自己保重APPID唯一
+	 * 注册新的APPID对应的Znode 业务方自己保重APPID唯一
+	 * 
 	 * @param appId
 	 * @throws Exception
 	 */
 	public static void regAppId(String appId) throws Exception {
 		ZooKeeper zk = getZooKeeper();
-		 
+
 		System.out.println(zk.getChildren("/", null));
 		if (zk.exists("/appid", null) == null) {
 			zk.create("/appid", "111".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
@@ -44,9 +42,10 @@ public class SeqNo {
 		String path = getAppIdPath(appId);
 		zk.create(path, "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 	}
-	
+
 	/**
 	 * 获得新的全局地址序列号
+	 * 
 	 * @param appId
 	 * @return
 	 * @throws Exception
@@ -55,10 +54,12 @@ public class SeqNo {
 		String path = getAppIdPath(appId);
 		Stat stat = getZooKeeper().setData(path, "".getBytes(), -1);
 		return stat.getVersion();
-		
+
 	}
+
 	/**
 	 * 通过APPID获得Znode路径
+	 * 
 	 * @param appId
 	 * @return
 	 */
