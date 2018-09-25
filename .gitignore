@@ -3,3 +3,4 @@
 *.so
 properties.hpp
 seqno.ini
+*settings*
