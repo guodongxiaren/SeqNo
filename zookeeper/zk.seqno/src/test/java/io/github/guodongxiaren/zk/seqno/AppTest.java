@@ -1,38 +1,48 @@
 package io.github.guodongxiaren.zk.seqno;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+public class AppTest extends Thread {
+	private long timeStart;
+	private int seqNoStart;
 
-/**
- * Unit test for simple App.
- */
-public class AppTest 
-    extends TestCase
-{
-    /**
-     * Create the test case
-     *
-     * @param testName name of the test case
-     */
-    public AppTest( String testName )
-    {
-        super( testName );
-    }
+	public AppTest(long timeStart, int seqNoStart) {
+		super();
+		this.timeStart = timeStart;
+		this.seqNoStart = seqNoStart;
+	}
 
-    /**
-     * @return the suite of tests being tested
-     */
-    public static Test suite()
-    {
-        return new TestSuite( AppTest.class );
-    }
+	public static void main(String[] args) throws Exception {
+		try {
+			boolean exists = SeqNo.regAppId("userid");
+			System.out.println("has exists:" + exists);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		Thread[] ts = new AppTest[500];
+		int seqNo = SeqNo.get("userid");
+		long timeStart = System.currentTimeMillis();
 
-    /**
-     * Rigourous Test :-)
-     */
-    public void testApp()
-    {
-        assertTrue( true );
-    }
+		for (Thread t : ts) {
+			t = new AppTest(timeStart, seqNo);
+			t.start();
+			try {
+				t.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	@Override
+	public void run() {
+		super.run();
+		try {
+			int seqNo = SeqNo.get("userid");
+			long timeEnd = System.currentTimeMillis();
+			System.out.println("time:" + (timeEnd - timeStart) + "|" + (seqNo - seqNoStart));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 }

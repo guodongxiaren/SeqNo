@@ -1,11 +1,6 @@
 package io.github.guodongxiaren.zk.seqno;
 
-import java.util.concurrent.CountDownLatch;
-
 import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
@@ -20,27 +15,28 @@ public class SeqNo {
 			synchronized (lock) {
 				zk = (zk == null) ? new ZooKeeper("127.0.0.1:2181", 500000, null) : zk;
 			}
-
-			// connectedSemaphore.await();
 		}
 		return zk;
 	}
 
 	/**
 	 * 注册新的APPID对应的Znode 业务方自己保重APPID唯一
-	 * 
+	 * 支持重入
+	 * @return 返回是否该节点之前已经存在
 	 * @param appId
 	 * @throws Exception
 	 */
-	public static void regAppId(String appId) throws Exception {
+	public static boolean regAppId(String appId) throws Exception {
 		ZooKeeper zk = getZooKeeper();
-
-		System.out.println(zk.getChildren("/", null));
-		if (zk.exists("/appid", null) == null) {
-			zk.create("/appid", "111".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-		}
 		String path = getAppIdPath(appId);
-		zk.create(path, "".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+		
+		System.out.println(zk.getChildren("/", null));
+		if (zk.exists(path, null) == null) {
+			zk.create(path, "111".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	/**
@@ -59,12 +55,12 @@ public class SeqNo {
 
 	/**
 	 * 通过APPID获得Znode路径
-	 * 
+	 * !需要保证/seqno节点以及存在
 	 * @param appId
 	 * @return
 	 */
 	private static String getAppIdPath(String appId) {
-		return String.format("/appid/%s", appId);
+		return String.format("/seqno/%s", appId);
 	}
 
 }
